@@ -24,6 +24,12 @@ const (
 	ParseSyntaxMask = ` ()'`
 )
 
+// ParseListSimple parses a list from a string with a few hard-coded syntax
+// rules:
+// - items are separated by spaces
+// - strings containing spaces can be surrounded by single-quotes
+// - The `\` symbol can escape single-quotes and other `\`s within strings
+// - parethesis can be used to next lists inside other lists
 func ParseListSimple(input string) ([]interface{}, error) {
 	input = strings.TrimSpace(input)
 	input += " "
@@ -84,7 +90,9 @@ func ParseListSimple(input string) ([]interface{}, error) {
 				doneList := current
 				lastList := stack.Pop().(*[]interface{})
 				current = lastList
-				*current = append(*current, doneList)
+
+				// Append current list as a literal list (non-pointer)
+				*current = append(*current, *doneList)
 				continue
 			}
 			if thisRune == ParseTokenQuote /* ' */ {
